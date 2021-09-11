@@ -85,13 +85,14 @@ class WebServer
     puts '[INFO] Exit this program with CTRL-C'
 
     loop do
-      connection = @server.accept
-      request_http = connection.recv MAX_REQUEST_SIZE
-      request = parse_request(request_http)
-      puts request
-      status, headers, body = @web_application.process(request)
-      connection.puts prepare_response(status, headers, body)
-      connection.close
+      Thread.start(@server.accept) do |connection|
+        request_http = connection.recv MAX_REQUEST_SIZE
+        request = parse_request(request_http)
+        puts request
+        status, headers, body = @web_application.process(request)
+        connection.puts prepare_response(status, headers, body)
+        connection.close
+      end
     end
   end
 end
